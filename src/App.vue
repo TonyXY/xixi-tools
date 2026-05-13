@@ -3,17 +3,9 @@
     <a-layout-sider v-model:collapsed="collapsed" class="sider" collapsible :width="200" :style="{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }">
       <div class="logo">🛠️</div>
       <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-        <a-menu-item key="stock" @click="navigate('/stock')">
-          <template #icon><LineChartOutlined /></template>
-          <span>股票监控</span>
-        </a-menu-item>
         <a-menu-item key="photo-id" @click="navigate('/photo-id')">
           <template #icon><CameraOutlined /></template>
           <span>证件照制作</span>
-        </a-menu-item>
-        <a-menu-item key="photo-gallery" @click="navigate('/photo-gallery')">
-          <template #icon><PictureOutlined /></template>
-          <span>相册浏览</span>
         </a-menu-item>
         <a-menu-item key="watermark" @click="navigate('/watermark')">
           <template #icon><EditOutlined /></template>
@@ -50,9 +42,7 @@ import { useRouter, useRoute } from 'vue-router'
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  LineChartOutlined,
   CameraOutlined,
-  PictureOutlined,
   EditOutlined,
   RobotOutlined
 } from '@ant-design/icons-vue'
