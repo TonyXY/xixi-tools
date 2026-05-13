@@ -9,9 +9,11 @@ import PhotoIdMaker from './apps/PhotoIdMaker.vue'
 import PhotoGallery from './apps/PhotoGallery.vue'
 import ImageWatermark from './apps/ImageWatermark.vue'
 import AIKnowledge from './apps/AIKnowledge.vue'
+import Home from './apps/Home.vue'
 
 const routes = [
-  { path: '/', redirect: '/stock' },
+  { path: '/', redirect: '/home' },
+  { path: '/home', component: Home },
   { path: '/stock', component: StockMonitor },
   { path: '/photo-id', component: PhotoIdMaker },
   { path: '/photo-gallery', component: PhotoGallery },

@@ -50,9 +50,10 @@ import {
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
-const selectedKeys = ref<string[]>([route.path.slice(1) || 'stock'])
+const selectedKeys = ref<string[]>([route.path.slice(1) || 'home'])
 
 const titles: Record<string, string> = {
+  home: '首页',
   stock: '股票监控',
   'photo-id': '证件照制作',
   'photo-gallery': '相册浏览',
@@ -61,6 +62,7 @@ const titles: Record<string, string> = {
 }
 
 const descs: Record<string, string> = {
+  home: '精选实用工具，提升你的工作效率',
   stock: '实时监控股票走势，快速添加指数或个股',
   'photo-id': '上传照片，AI抠图换背景，自动裁剪调整',
   'photo-gallery': '选择文件夹浏览本地图片，支持缩略图预览',
@@ -77,7 +79,7 @@ function navigate(path: string) {
 }
 
 watch(() => route.path, (path) => {
-  selectedKeys.value = [path.slice(1) || 'stock']
+  selectedKeys.value = [path.slice(1) || 'home']
 })
 </script>
 
