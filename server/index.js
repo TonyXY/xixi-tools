@@ -5,7 +5,9 @@ const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://tonyxy.github.io'],
+}));
 app.use(express.json());
 
 // Movie API routes (search, hot, detail, category)
@@ -117,5 +119,5 @@ app.get('/api/photo/*', (req, res) => {
   res.sendFile(abs);
 });
 
-const PORT = 3005;
+const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => console.log(`Photo Gallery server listening on http://localhost:${PORT}`));
