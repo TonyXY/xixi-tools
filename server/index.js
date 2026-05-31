@@ -8,6 +8,9 @@ const app = express();
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
+// Movie API routes (search, hot, detail, category)
+app.use('/api/movie', require('./movie-api'));
+
 // Root from which user folders are discovered. Adjust if needed.
 const BASE_ROOT = '/Users/xiaoyang';
 let currentFolder = null;

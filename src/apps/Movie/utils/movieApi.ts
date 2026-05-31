@@ -1,6 +1,6 @@
 import type { HotDrama, Drama, DramaDetail } from '../types'
 
-const API_BASE = '/api/movie'
+const API_BASE = import.meta.env.VITE_API_URL || '/api/movie'
 
 async function fetchJson<T>(url: string, errorMsg: string): Promise<T> {
   const res = await fetch(url)
