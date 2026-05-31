@@ -9,6 +9,7 @@ export default defineConfig({
   // For production, the same API is served by server/movie-api.js (Express router)
   plugins: [vue(), generateRouteHtml(), movieApiPlugin()],
   server: {
+    host: '0.0.0.0',
     port: 3000,
     proxy: {
       '/api/movie': { target: 'http://localhost:3005', changeOrigin: true },
