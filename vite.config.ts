@@ -4,7 +4,7 @@ import { movieApiPlugin } from './plugins/movie-api-plugin'
 import { generateRouteHtml } from './plugins/generate-route-html'
 
 export default defineConfig({
-  base: '/xixi-tools/',
+  base: process.env.VITE_BASE_URL || '/',
   // movieApiPlugin handles /api/movie/* in dev (runs inside Vite, no Express needed)
   // For production, the same API is served by server/movie-api.js (Express router)
   plugins: [vue(), generateRouteHtml(), movieApiPlugin()],
