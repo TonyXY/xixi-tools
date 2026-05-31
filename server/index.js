@@ -5,7 +5,7 @@ const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3003' }));
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 // Root from which user folders are discovered. Adjust if needed.

@@ -1,27 +1,50 @@
 <template>
   <a-layout class="layout">
-    <a-layout-sider v-model:collapsed="collapsed" class="sider" collapsible :width="200" :style="{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }">
+    <!-- Desktop sidebar -->
+    <a-layout-sider
+      v-if="!isMobile"
+      v-model:collapsed="collapsed"
+      class="sider"
+      collapsible
+      :width="200"
+      :style="{ position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }"
+    >
       <div class="logo">🛠️</div>
       <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-        <a-menu-item key="photo-id" @click="navigate('/photo-id')">
-          <template #icon><CameraOutlined /></template>
-          <span>证件照制作</span>
-        </a-menu-item>
-        <a-menu-item key="watermark" @click="navigate('/watermark')">
-          <template #icon><EditOutlined /></template>
-          <span>图片水印</span>
-        </a-menu-item>
-        <a-menu-item key="ai-knowledge" @click="navigate('/ai-knowledge')">
-          <template #icon><RobotOutlined /></template>
-          <span>AI知识库</span>
+        <a-menu-item v-for="item in menuItems" :key="item.key" @click="navigate(item.path)">
+          <template #icon>
+            <component :is="item.icon" />
+          </template>
+          <span>{{ item.label }}</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
-    
-    <a-layout class="main-layout" :style="{ marginLeft: collapsed ? '80px' : '200px' }">
+
+    <!-- Mobile drawer -->
+    <a-drawer
+      v-if="isMobile"
+      :open="drawerVisible"
+      placement="left"
+      :width="220"
+      :closable="false"
+      :body-style="{ padding: 0, background: '#1f2937' }"
+      @close="drawerVisible = false"
+    >
+      <div class="logo" style="height:48px;">🛠️</div>
+      <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
+        <a-menu-item v-for="item in menuItems" :key="item.key" @click="navigate(item.path)">
+          <template #icon>
+            <component :is="item.icon" />
+          </template>
+          <span>{{ item.label }}</span>
+        </a-menu-item>
+      </a-menu>
+    </a-drawer>
+
+    <a-layout class="main-layout" :class="{ collapsed: collapsed && !isMobile, mobile: isMobile }">
       <a-layout-header class="header">
-        <span class="collapse-btn" @click="collapsed = !collapsed">
-          <MenuUnfoldOutlined v-if="collapsed" />
+        <span class="collapse-btn" @click="toggleNav">
+          <MenuUnfoldOutlined v-if="navCollapsed" />
           <MenuFoldOutlined v-else />
         </span>
         <div class="header-info">
@@ -37,44 +60,92 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, markRaw } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   CameraOutlined,
   EditOutlined,
-  RobotOutlined
+  RobotOutlined,
+  PlaySquareOutlined
 } from '@ant-design/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 const collapsed = ref(false)
+const drawerVisible = ref(false)
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
 const selectedKeys = ref<string[]>([route.path.slice(1) || 'home'])
+
+const menuItems = [
+  { key: 'photo-id', path: '/photo-id', icon: markRaw(CameraOutlined), label: '证件照制作' },
+  { key: 'watermark', path: '/watermark', icon: markRaw(EditOutlined), label: '图片水印' },
+  { key: 'ai-knowledge', path: '/ai-knowledge', icon: markRaw(RobotOutlined), label: 'AI知识库' },
+  { key: 'movie', path: '/movie', icon: markRaw(PlaySquareOutlined), label: '影视搜索' },
+]
+
+// Computed for the header toggle icon
+const navCollapsed = computed(() => isMobile.value ? !drawerVisible.value : collapsed.value)
+
+function toggleNav() {
+  if (isMobile.value) {
+    drawerVisible.value = !drawerVisible.value
+  } else {
+    collapsed.value = !collapsed.value
+  }
+}
+
+// Resize handler: switch between mobile/desktop mode
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
+function handleResize() {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    const mobile = window.innerWidth < 768
+    if (mobile !== isMobile.value) {
+      isMobile.value = mobile
+      if (mobile) {
+        collapsed.value = false
+        drawerVisible.value = false
+      }
+    }
+  }, 200)
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  if (resizeTimer) clearTimeout(resizeTimer)
+})
 
 const titles: Record<string, string> = {
   home: '首页',
-  stock: '股票监控',
   'photo-id': '证件照制作',
   'photo-gallery': '相册浏览',
   watermark: '图片水印',
-  'ai-knowledge': 'AI知识库'
+  'ai-knowledge': 'AI知识库',
+  movie: '影视搜索'
 }
 
 const descs: Record<string, string> = {
   home: '精选实用工具，提升你的工作效率',
-  stock: '实时监控股票走势，快速添加指数或个股',
   'photo-id': '上传照片，AI抠图换背景，自动裁剪调整',
   'photo-gallery': '选择文件夹浏览本地图片，支持缩略图预览',
   watermark: '添加文字或图片水印，支持批量处理',
-  'ai-knowledge': '学习AI的常用网站及工具介绍'
+  'ai-knowledge': '学习AI的常用网站及工具介绍',
+  movie: '搜索热播影视剧，在线选集播放'
 }
 
 const pageDesc = computed(() => descs[selectedKeys.value[0]] || '')
-
 const pageTitle = computed(() => titles[selectedKeys.value[0]] || '我的工具')
 
 function navigate(path: string) {
+  if (isMobile.value) {
+    drawerVisible.value = false
+  }
   router.push(path)
 }
 
@@ -83,140 +154,23 @@ watch(() => route.path, (path) => {
 })
 </script>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/antd@5/dist/reset.css');
-
-:root {
-  /* Primary palette */
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  
-  /* Neutral palette */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
-  
-  /* Text */
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  
-  /* Semantic */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  
-  /* Border radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: var(--text-primary);
-  background: var(--gray-50);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Global button styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  background: var(--gray-100);
-  color: var(--gray-700);
-  border: 1px solid var(--gray-200);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--gray-200);
-  border-color: var(--gray-300);
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
-
-.btn-success:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: #fff;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-}
-
+<style scoped>
 .layout {
   min-height: 100vh;
 }
 
 .main-layout {
+  margin-left: 200px;
   min-height: 100vh;
+  transition: margin-left 0.2s;
+}
+
+.main-layout.collapsed {
+  margin-left: 80px;
+}
+
+.main-layout.mobile {
+  margin-left: 0;
 }
 
 .header {
@@ -234,10 +188,15 @@ body {
 }
 
 .collapse-btn {
-  font-size: 14px;
+  font-size: 18px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .collapse-btn:hover {
@@ -261,13 +220,20 @@ body {
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.2;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .page-desc {
+    display: block;
+  }
 }
 
 .sider {
   background: #1f2937 !important;
 }
 
-.sider .ant-layout-sider-children {
+.sider :deep(.ant-layout-sider-children) {
   background: #1f2937;
 }
 
@@ -280,26 +246,20 @@ body {
   color: #fff;
 }
 
-.trigger {
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.trigger:hover {
-  color: var(--primary);
-}
-
-.page-title {
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .content {
   margin: 8px;
   padding: 12px;
   background: #fff;
   border-radius: var(--radius-sm);
   min-height: 100vh;
+}
+
+/* Mobile drawer menu styling */
+:deep(.ant-drawer-content-wrapper) {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.ant-drawer-content) {
+  background: #1f2937;
 }
 </style>

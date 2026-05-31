@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { WatermarkConfig } from '../types/watermark'
+import type { WatermarkConfig } from '../types'
 
 const props = defineProps<{
   imageUrl: string | null

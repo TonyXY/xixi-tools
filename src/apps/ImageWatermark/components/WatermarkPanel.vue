@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { WatermarkConfig, WatermarkPosition } from '../types/watermark'
+import type { WatermarkConfig, WatermarkPosition } from '../types'
 
 const props = defineProps<{
   config: WatermarkConfig
