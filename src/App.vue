@@ -68,7 +68,9 @@ import {
   CameraOutlined,
   EditOutlined,
   RobotOutlined,
-  PlaySquareOutlined
+  PlaySquareOutlined,
+  PictureOutlined,
+  FileTextOutlined
 } from '@ant-design/icons-vue'
 
 const router = useRouter()
@@ -81,6 +83,8 @@ const selectedKeys = ref<string[]>([route.path.slice(1) || 'home'])
 const menuItems = [
   { key: 'photo-id', path: '/photo-id', icon: markRaw(CameraOutlined), label: '证件照制作' },
   { key: 'watermark', path: '/watermark', icon: markRaw(EditOutlined), label: '图片水印' },
+  { key: 'text-to-image', path: '/text-to-image', icon: markRaw(PictureOutlined), label: '文生图' },
+  { key: 'xiaohongshu', path: '/xiaohongshu', icon: markRaw(FileTextOutlined), label: '小红书生成' },
   { key: 'ai-knowledge', path: '/ai-knowledge', icon: markRaw(RobotOutlined), label: 'AI知识库' },
   { key: 'movie', path: '/movie', icon: markRaw(PlaySquareOutlined), label: '影视搜索' },
 ]
@@ -126,8 +130,10 @@ const titles: Record<string, string> = {
   'photo-id': '证件照制作',
   'photo-gallery': '相册浏览',
   watermark: '图片水印',
+  'text-to-image': '文生图',
   'ai-knowledge': 'AI知识库',
-  movie: '影视搜索'
+  movie: '影视搜索',
+  xiaohongshu: '小红书生成'
 }
 
 const descs: Record<string, string> = {
@@ -135,8 +141,10 @@ const descs: Record<string, string> = {
   'photo-id': '上传照片，AI抠图换背景，自动裁剪调整',
   'photo-gallery': '选择文件夹浏览本地图片，支持缩略图预览',
   watermark: '添加文字或图片水印，支持批量处理',
+  'text-to-image': '输入文字描述，AI生成对应图片',
   'ai-knowledge': '学习AI的常用网站及工具介绍',
-  movie: '搜索热播影视剧，在线选集播放'
+  movie: '搜索热播影视剧，在线选集播放',
+  xiaohongshu: '生成小红书风格的影视推荐文案'
 }
 
 const pageDesc = computed(() => descs[selectedKeys.value[0]] || '')
