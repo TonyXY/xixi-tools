@@ -19,6 +19,7 @@
 | /photo-id | 证件照制作 | 上传照片，AI抠图换背景，自动裁剪调整 |
 | /photo-gallery | 相册浏览 | 选择文件夹浏览本地图片，支持缩略图预览 |
 | /watermark | 图片水印 | 添加文字或图片水印，支持批量处理 |
+| /text-to-image | 文生图 | 输入文字描述，AI生成对应图片 |
 | /ai-knowledge | AI知识库 | AI 学习资源导航 |
 | /movie | 影视搜索 | 搜索热播影视剧，在线选集播放 |
 | /movie?id=X&source=Y | 影视详情 | 视频播放 + 剧集列表 + 简介 |
@@ -75,6 +76,8 @@ my-tools/
         │       └── WatermarkPanel.vue
         ├── AIKnowledge/
         │   └── index.vue          # AI 知识导航
+        ├── TextToImage/
+        │   └── index.vue          # 文生图
         └── Movie/
             ├── index.vue          # 影视入口（路由分发 Search/Player）
             ├── types.ts
