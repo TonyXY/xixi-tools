@@ -46,6 +46,8 @@ const visibleTools = [
   { key: 'movie', name: '影视搜索', desc: '搜索热播影视剧，在线选集播放', icon: '🎬', bg: 'linear-gradient(135deg, #ef4444, #dc2626)' },
   { key: 'photo-id', name: '证件照制作', desc: '上传照片，AI抠图换背景，自动裁剪调整', icon: '📷', bg: 'linear-gradient(135deg, #6366f1, #8b5cf6)' },
   { key: 'watermark', name: '图片水印', desc: '添加文字或图片水印，支持批量处理', icon: '💧', bg: 'linear-gradient(135deg, #0ea5e9, #06b6d4)' },
+  { key: 'text-to-image', name: '文生图', desc: '输入文字描述，AI生成对应图片', icon: '🎨', bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
+  { key: 'xiaohongshu', name: '小红书生成', desc: '生成小红书风格的影视推荐文案', icon: '📱', bg: 'linear-gradient(135deg, #f43f5e, #e11d48)' },
   { key: 'ai-knowledge', name: 'AI知识库', desc: '学习AI的常用网站及工具介绍', icon: '🤖', bg: 'linear-gradient(135deg, #f59e0b, #f97316)' },
 ]
 
