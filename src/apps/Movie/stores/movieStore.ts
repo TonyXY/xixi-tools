@@ -30,10 +30,21 @@ export const useMovieStore = defineStore('movie', () => {
   const searching = ref(false)
   const chineseOnly = ref(true)
   const searchHistory = ref<string[]>(loadHistory())
+  const selectedTags = ref<string[]>([])
+  const selectedYear = ref('')
 
   watch(searchHistory, (val) => {
     saveHistory(val)
   })
+
+  function toggleTag(tag: string) {
+    const idx = selectedTags.value.indexOf(tag)
+    if (idx >= 0) {
+      selectedTags.value.splice(idx, 1)
+    } else {
+      selectedTags.value.push(tag)
+    }
+  }
 
   async function loadHot() {
     loading.value = true
@@ -48,15 +59,15 @@ export const useMovieStore = defineStore('movie', () => {
   }
 
   async function doSearch(query: string) {
-    if (!query.trim()) return
+    if (!query.trim() && !selectedTags.value.length) return
     searchQuery.value = query
     searching.value = true
     loading.value = true
     error.value = ''
-    addToHistory(query.trim())
+    if (query.trim()) addToHistory(query.trim())
     try {
       const region = chineseOnly.value ? '大陆' : ''
-      const data = await searchDramas(query, 1, region)
+      const data = await searchDramas(query, 1, region, selectedTags.value, selectedYear.value)
       searchResults.value = data.items || []
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : '搜索失败'
@@ -69,6 +80,7 @@ export const useMovieStore = defineStore('movie', () => {
   function clearSearch() {
     searchResults.value = null
     searchQuery.value = ''
+    selectedTags.value = []
   }
 
   function addToHistory(query: string) {
@@ -94,9 +106,12 @@ export const useMovieStore = defineStore('movie', () => {
     searching,
     chineseOnly,
     searchHistory,
+    selectedTags,
+    selectedYear,
     loadHot,
     doSearch,
     clearSearch,
+    toggleTag,
     removeFromHistory,
     clearHistory,
   }

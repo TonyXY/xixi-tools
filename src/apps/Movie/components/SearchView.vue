@@ -14,10 +14,6 @@
           <SearchOutlined />
           搜索
         </button>
-        <label class="region-toggle" :class="{ active: store.chineseOnly }">
-          <input type="checkbox" v-model="store.chineseOnly" />
-          仅大陆
-        </label>
       </div>
       <div v-if="store.searchHistory.length && store.searchResults === null" class="search-history">
         <div class="history-header">
@@ -31,8 +27,33 @@
           </span>
         </div>
       </div>
-      <div class="search-tips" v-if="!store.searching && store.searchResults === null">
-        <span v-for="tag in HOT_TAGS" :key="tag" class="tag" @click="store.searchQuery = tag; doSearch()">{{ tag }}</span>
+      <div class="filter-scroll">
+        <div class="filter-row">
+          <span
+            class="filter-pill"
+            :class="{ active: store.chineseOnly }"
+            @click="store.chineseOnly = !store.chineseOnly"
+          >仅大陆</span>
+          <span
+            v-for="y in YEAR_OPTIONS"
+            :key="y"
+            class="filter-pill"
+            :class="{ active: store.selectedYear === y }"
+            @click="store.selectedYear = store.selectedYear === y ? '' : y"
+          >{{ y }}</span>
+        </div>
+        <div class="filter-row">
+          <span
+            v-for="tag in HOT_TAGS"
+            :key="tag"
+            class="filter-pill"
+            :class="{ active: store.selectedTags.includes(tag) }"
+            @click="store.toggleTag(tag)"
+          >{{ tag }}</span>
+          <button v-if="store.selectedTags.length || store.selectedYear" class="btn btn-text filter-go-btn" @click="doSearch">
+            筛选
+          </button>
+        </div>
       </div>
     </div>
 
@@ -97,7 +118,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { SearchOutlined, StarFilled, FireOutlined, LoadingOutlined, CloseOutlined } from '@ant-design/icons-vue'
 import { useMovieStore } from '../stores/movieStore'
-import { HOT_TAGS } from '../types'
+import { HOT_TAGS, YEAR_OPTIONS } from '../types'
 import type { Drama, HotDrama } from '../types'
 import { searchDramas } from '../utils/movieApi'
 import DramaCard from './DramaCard.vue'
@@ -190,70 +211,62 @@ function onImgError(e: Event) {
   gap: 4px;
 }
 
-.region-toggle {
+/* Filter pills (region, year, category tags) */
+.filter-scroll {
+  margin-top: 10px;
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  user-select: none;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.region-toggle input {
+.filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.filter-row::-webkit-scrollbar {
   display: none;
 }
 
-.region-toggle::before {
-  content: '';
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid var(--gray-400);
-  border-radius: 3px;
-  transition: all 0.2s;
-}
-
-.region-toggle.active {
-  background: #eef2ff;
-  border-color: var(--primary-light);
-  color: var(--primary);
-}
-
-.region-toggle.active::before {
-  background: var(--primary);
-  border-color: var(--primary);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 14 14' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5 3.5L5.5 9.5L2.5 6.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-size: 10px;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.search-tips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.tag {
-  padding: 4px 12px;
+.filter-pill {
+  flex-shrink: 0;
+  padding: 5px 12px;
   font-size: 12px;
   color: var(--text-secondary);
   background: var(--gray-100);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.tag:hover {
-  color: var(--primary);
-  background: #eef2ff;
+.filter-pill:active {
+  transform: scale(0.95);
+}
+
+.filter-pill.active {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.filter-go-btn {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 /* Search History */
@@ -504,10 +517,6 @@ function onImgError(e: Event) {
     flex: 1;
     order: 1;
     justify-content: center;
-  }
-
-  .region-toggle {
-    order: 2;
   }
 
   .drama-grid {

@@ -44,3 +44,6 @@ export interface SearchResult {
 export interface DramaDetail extends Drama {}
 
 export const HOT_TAGS = ['电视剧', '电影', '国产剧', '悬疑', '古装', '都市', '喜剧', '爱情']
+
+const currentYear = new Date().getFullYear()
+export const YEAR_OPTIONS = Array.from({ length: 8 }, (_, i) => String(currentYear - i))

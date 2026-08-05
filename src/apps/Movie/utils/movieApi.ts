@@ -13,7 +13,7 @@ export async function fetchHot(): Promise<HotDrama[]> {
   return data.items || []
 }
 
-export async function searchDramas(query: string, page = 1, region = ''): Promise<{
+export async function searchDramas(query: string, page = 1, region = '', tags: string[] = [], year = ''): Promise<{
   items: Drama[]
   total: number
   page: number
@@ -22,6 +22,8 @@ export async function searchDramas(query: string, page = 1, region = ''): Promis
 }> {
   let url = `${API_BASE}/search?q=${encodeURIComponent(query)}&page=${page}`
   if (region) url += `&region=${encodeURIComponent(region)}`
+  if (tags.length) url += `&tags=${encodeURIComponent(tags.join(','))}`
+  if (year) url += `&year=${encodeURIComponent(year)}`
   const data = await fetchJson<{
     items: Drama[]
     total: number
