@@ -139,6 +139,65 @@ async function handleSearch(req, res) {
     const query = req.query.q || ''
     const page = parseInt(req.query.page || '1')
     const region = req.query.region || ''
+    const tags = req.query.tags || ''
+    const year = req.query.year || ''
+
+    // ---- Tag mode: search豆瓣 by tags, then find CMS playable sources ----
+    if (tags.trim()) {
+      const tagList = tags.split(',').map(t => t.trim()).filter(Boolean)
+      // Append year to豆瓣 tag filter if provided
+      if (year) tagList.push(year)
+      const doubanSubjects = await searchDoubanFiltered(tagList, 'T', 0)
+      if (!doubanSubjects.length) {
+        return res.status(200).json({ items: [], total: 0, page, pageSize: 20, hasMore: false })
+      }
+
+      // Filter豆瓣 subjects by keyword if q provided
+      let matched = doubanSubjects
+      if (query.trim()) {
+        const q = query.trim().toLowerCase()
+        matched = doubanSubjects.filter(s => s.title.toLowerCase().includes(q))
+      }
+
+      // For each豆瓣 subject, search CMS by title — limit to first 12 for performance
+      const MAX_TAG_RESULTS = 12
+      const cmsPromises = matched.slice(0, MAX_TAG_RESULTS).map(async (subject) => {
+        try {
+          const cmsResults = await searchCMS(subject.title, 1)
+          if (!cmsResults || !cmsResults.length) return null
+          // Pick the best CMS match by title similarity
+          let bestItem = null, bestScore = 0
+          for (const src of cmsResults) {
+            for (const item of src.items) {
+              const score = titleSimilarity(item.vod_name, subject.title)
+              if (score > bestScore && score >= 0.5) { bestScore = score; bestItem = { item, sourceName: src.sourceName, sourceBaseUrl: src.sourceBaseUrl } }
+            }
+          }
+          if (!bestItem) return null
+          const { item, sourceName, sourceBaseUrl } = bestItem
+          const hasEnded = item.vod_remarks?.includes('完结') || item.vod_remarks?.includes('全')
+          return {
+            id: String(item.vod_id), title: subject.title,
+            cover: subject.cover || item.vod_pic || '',
+            rating: parseFloat(subject.rate) || parseFloat(item.vod_score) || 0,
+            year: parseInt(item.vod_year) || 0, category: item.type_name || '', region: item.vod_area || '',
+            director: item.vod_director || '',
+            actors: item.vod_actor ? item.vod_actor.split(',').map((s) => s.trim()).filter(Boolean) : [],
+            description: item.vod_content ? item.vod_content.replace(/<[^>]*>/g, '').trim() : '',
+            episodes: parseEpisodes(item.vod_play_url), status: hasEnded ? 'completed' : 'airing',
+            updateTime: item.vod_time || '', source: sourceName, sourceUrl: sourceBaseUrl,
+          }
+        } catch { return null }
+      })
+
+      let results = (await Promise.all(cmsPromises)).filter(Boolean)
+      if (region) results = results.filter(d => (d.region || '').includes(region))
+      if (year) results = results.filter(d => String(d.year) === year)
+
+      return res.status(200).json({ items: results, total: results.length, page, pageSize: 20, hasMore: false })
+    }
+
+    // ---- Legacy keyword mode (unchanged) ----
     if (!query.trim()) return res.status(200).json({ items: [], total: 0, page, pageSize: 20, hasMore: false })
 
     const [sourceResults, doubanSubjects] = await Promise.all([searchCMS(query, page), searchDouban(query)])
@@ -158,9 +217,9 @@ async function handleSearch(req, res) {
       }
     }
 
-    const filtered = region
-      ? mergedItems.filter(({ item }) => item.vod_area === region)
-      : mergedItems
+    let filtered = mergedItems
+    if (region) filtered = filtered.filter(({ item }) => item.vod_area === region)
+    if (year) filtered = filtered.filter(({ item }) => String(item.vod_year) === year)
 
     const dramas = filtered.map(({ item, sourceName, sourceBaseUrl }) => {
       const hasEnded = item.vod_remarks?.includes('完结') || item.vod_remarks?.includes('全')
